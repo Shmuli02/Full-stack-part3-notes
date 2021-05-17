@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const morgan = require('morgan')
 
 const generateId = () => {
     const id = Math.floor(Math.random() * 1000)
@@ -30,12 +31,14 @@ let persons = [
     ]
 
 app.use(express.json())
+app.use(morgan('tiny'))
 
 app.get('/api/persons', (req, res) => {
     res.json(persons)
 })
 
 app.get('/api/persons/:id', (req,res) => {
+
     const id = Number(req.params.id)
     const person = persons.find(person => person.id === id)
     if (person) {
@@ -59,7 +62,6 @@ app.post('/api/persons', (req,res) => {
         number : body.number,
         id : generateId()
     }
-    console.log(new_person)
     if (!body.name) {
         return res.status(400).json({
             error : 'name missing'
@@ -99,3 +101,9 @@ const PORT = 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+  }
+  
+  app.use(unknownEndpoint)
