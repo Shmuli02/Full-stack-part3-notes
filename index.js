@@ -18,11 +18,16 @@ app.use(cors())
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
+    console.log(error.name)
   
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({error : error.message })
     }
-  
+    
     next(error)
   }
 
@@ -64,38 +69,18 @@ app.delete('/api/persons/:id', (req,res,next) => {
         })
 })
 
-app.post('/api/persons', (req,res) => {
+app.post('/api/persons', (req,res,next) => {
     const body = req.body
-
-    if (!body.name) {
-        return res.status(400).json({
-            error : 'name missing'
-        })
-    }
-    if (!body.number) {
-        return res.status(400).json({
-            error : 'number missing'
-        })
-    }
     const new_person = new Person({
         name : body.name,
         number : body.number
-    })
-    new_person.save().then(savedPerson => {
-        res.json(savedPerson)
-    })
+    });
 
-
-
-    // if (Person.findOne(person => person.name === body.name)) {
-    //     new_person.save().then(savedPerson => {
-    //         res.json(savedPerson)
-    //     })
-    // } else {
-    //     return res.status(400).json({
-    //         error : 'name must be unique'
-    //     })
-    // }
+    new_person.save()
+        .then(savedPerson => {
+            res.json(savedPerson)
+        })
+        .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (req,res,next) => {

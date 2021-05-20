@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator');
 
 const url = process.env.MONGODB_URI
 
@@ -11,35 +12,25 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFind
         console.log('error connecting to MongoDB:', error.message)
     })
 
-    const phonebookSchema = new mongoose.Schema({
-    name: String,
-    number: String,
-    })
+const phonebookSchema = new mongoose.Schema({
+  name: {
+    type : String,
+    required : true,
+    minlength : 3,
+    unique : true
+  },
+  number: {
+    type : Number,
+    min : 10000000,
+    required : true,
+    
+  }
+})
+phonebookSchema.plugin(uniqueValidator)
 
 const Person = mongoose.model('Person', phonebookSchema)
 
 
-if (process.argv.length == 3) {
-  Person.find({}).then(result => {
-    result.forEach(note => {
-      console.log(note.name, note.number)
-    })
-    mongoose.connection.close()
-  })
-}
-
-
-if (process.argv.length == 5) {
-  const person = new Person({
-    name : process.argv[3],
-    number : process.argv[4]
-  })
-  
-  person.save().then(response => {
-    console.log('note saved!')
-    mongoose.connection.close()
-  })
-}
 
 phonebookSchema.set('toJSON', {
     transform: (document,returnObject) => {
