@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const uniqueValidator = require('mongoose-unique-validator');
+const uniqueValidator = require('mongoose-unique-validator')
 
 const url = process.env.MONGODB_URI
 
@@ -23,7 +23,6 @@ const phonebookSchema = new mongoose.Schema({
     type : Number,
     min : 10000000,
     required : true,
-    
   }
 })
 phonebookSchema.plugin(uniqueValidator)

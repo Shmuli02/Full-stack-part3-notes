@@ -10,7 +10,7 @@ const generateId = () => {
     return id
 }
 
-
+app.use(express.static('build'))
 app.use(express.json())
 app.use(morgan('tiny'))
 app.use(cors())
@@ -19,26 +19,25 @@ app.use(cors())
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
     console.log(error.name)
-  
+
     if (error.name === 'CastError') {
-      return response.status(400).send({ error: 'malformatted id' })
-    } else if (error.name === 'ValidationError') {
-        return response.status(400).json({ error: error.message })
-    } else if (error.name === 'ValidationError') {
-        return response.status(400).json({error : error.message })
+        return response.status(400).send({ error: 'malformatted id' })
     }
-    
+    if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
+
     next(error)
-  }
+}
 
 
-app.get('/api/persons', (req, res,next) => {
+app.get('/api/persons', (req, res, next) => {
     Person.find({}).then(person => {
         res.json(person)
     })
 })
 
-app.get('/api/persons/:id', (req,res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id)
         .then(person => {
             if (person) {
@@ -53,12 +52,12 @@ app.get('/api/persons/:id', (req,res) => {
         })
 })
 
-app.delete('/api/persons/:id', (req,res,next) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     const body = req.body
 
     const person = {
-        name : body.name,
-        number : body.number,
+        name: body.name,
+        number: body.number,
     }
     Person.findByIdAndDelete(req.params.id, person)
         .then(updatedPersons => {
@@ -69,12 +68,12 @@ app.delete('/api/persons/:id', (req,res,next) => {
         })
 })
 
-app.post('/api/persons', (req,res,next) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
     const new_person = new Person({
-        name : body.name,
-        number : body.number
-    });
+        name: body.name,
+        number: body.number
+    })
 
     new_person.save()
         .then(savedPerson => {
@@ -83,12 +82,12 @@ app.post('/api/persons', (req,res,next) => {
         .catch(error => next(error))
 })
 
-app.put('/api/persons/:id', (req,res,next) => {
+app.put('/api/persons/:id', (req, res, next) => {
     const body = req.body
 
     const person = {
-        name : body.name,
-        number : body.number,
+        name: body.name,
+        number: body.number,
     }
 
     Person.findByIdAndUpdate(req.params.id, person, { new: true })
@@ -101,7 +100,7 @@ app.put('/api/persons/:id', (req,res,next) => {
 
 
 
-app.get('/info',(req,res) => {
+app.get('/info', (req, res) => {
     const persons_legth = persons.length
     const date = new Date()
     res.send(`<p>Phonebook has info for ${persons_legth} people </p><p>${date}</p>`)
@@ -111,11 +110,11 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
-  }
-  
-  app.use(unknownEndpoint)
+}
+
+app.use(unknownEndpoint)
